@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- Note to readers: this is not the most compliant HTML you'll ever see. Sorry -->
+    <head>
+        <title>Countdown</title>
+        <style>
+            body {
+                background-color: #000;
+                color: #fff;
+                text-align: center;
+                overflow: hidden;
+                font-family: monospace;
+                cursor: none;
+            }
+            h1 {
+                font-size: 25em;
+            }
+            h2 {
+                font-size: 10em;
+            }
+        </style>
+    </head>
+    <body>
+        <noscript>You will need JavaScript to use this.</noscript>
+        <h1 id="clock">00:00</h1>
+        <h2>Time Left</h2>
+        <script type="text/javascript">
+            let isCounting = false;
+            let seconds = 0;
+            let timerId = -1;
+            let endDate = Date.now();
+            let index = 0;
+
+            document.onkeydown = (ev) => {
+                if (!isNaN(Number(ev.key)) && ev.key !== " ") {
+                    stop();
+                    let clock = document.getElementById("clock");
+                    if (index === 0) {
+                        clock.innerText = "0:00";
+                    }
+                    let text = clock.innerText.replace(':', '');
+                    text = `${text}${ev.key}`;
+                    if (text.length > 3 && text[0] === '0') text = text.substring(1);
+                    text = `${text.substring(0, text.length - 2)}:${text.substring(text.length - 2)}`;
+                    clock.innerText = text;
+                    index++;
+                } else if (ev.key === " " || ev.keyCode === 32 || ev.code === "Space" || ev.code === "Enter" || ev.key === "Enter") {
+                    if (isCounting) {
+                        stop();
+                    } else {
+                        let clock = document.getElementById("clock");
+                        let text = clock.innerText.replace(':', '');
+                        let min = Number(text.substring(0, text.length - 2));
+                        let sec = Number(text.substring(text.length - 2));
+                        seconds = (min * 60) + sec;
+                        endDate = Date.now() + (seconds * 1000);
+                        run();
+                    }
+                }
+            };
+            render();
+
+            function render() {
+                let minutes = seconds / 60;
+                let date = new Date(Math.abs(seconds) * 1000);
+                let time = date.toISOString().substr(14, 5);
+                if (time[0] === '0') time = time.substring(1);
+                let clock = document.getElementById("clock");
+                if (seconds <= 0) {
+                    clock.style.color = "tomato";
+                    if (seconds < 0) time = `-${time}`;
+                } else if (minutes < 5) {
+                    clock.style.color = "orange";
+                } else if (minutes >= 5) {
+                    clock.style.color = "unset";
+                }
+                clock.style.textDecoration = isCounting ? "unset" : "underline";
+                clock.innerText = time;
+            }
+
+            function run() {
+                isCounting = true;
+                index = 0;
+                timerId = setInterval(() => {
+                    seconds = (endDate - Date.now())/1000;
+                    render();
+                }, 300);
+            }
+
+            function stop() {
+                if (isCounting) {
+                    isCounting = false;
+                    clearInterval(timerId);
+                    render();
+                }
+            }
+        </script>
+    </body>
+</html>
